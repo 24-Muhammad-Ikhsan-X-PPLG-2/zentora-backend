@@ -104,10 +104,81 @@ export function pickBestChapters(chapters: any[]) {
   return Array.from(map.values());
 }
 
-export async function getChapters(mangaId: string) {
+export async function getChapters(
+  mangaId: string,
+  page: number = 1,
+  limit: number = 10,
+) {
+  const offset = (page - 1) * limit;
   try {
     const res = await fetch(
-      `${BASE_URL_API}/manga/${mangaId}/feed?limit=20&translatedLanguage[]=en&order[chapter]=asc`,
+      `${BASE_URL_API}/manga/${mangaId}/feed?limit=${limit}&offset=${offset}&translatedLanguage[]=en&order[chapter]=asc`,
+      {
+        headers,
+
+        // detail manga jarang berubah
+        next: {
+          revalidate: 3600,
+        },
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed fetch manga");
+    }
+
+    const data = await res.json();
+
+    return {
+      error: false,
+      response: data,
+    };
+  } catch (e) {
+    console.error(e);
+
+    return {
+      error: true,
+      response: null,
+    };
+  }
+}
+
+export async function getChapter(chapterId: string) {
+  try {
+    const res = await fetch(`${BASE_URL_API}/at-home/server/${chapterId}`, {
+      headers,
+
+      // detail manga jarang berubah
+      next: {
+        revalidate: 3600,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed fetch manga");
+    }
+
+    const data = await res.json();
+
+    return {
+      error: false,
+      response: data,
+    };
+  } catch (e) {
+    console.error(e);
+
+    return {
+      error: true,
+      response: null,
+    };
+  }
+}
+
+export async function search(q: string, page: number = 1, limit: number = 10) {
+  const offset = (page - 1) * limit;
+  try {
+    const res = await fetch(
+      `${BASE_URL_API}/manga?title=${encodeURIComponent(q)}&limit=${limit}&offset=${offset}&includes[]=cover_art`,
       {
         headers,
 

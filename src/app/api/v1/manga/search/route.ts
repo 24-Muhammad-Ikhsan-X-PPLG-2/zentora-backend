@@ -1,18 +1,16 @@
-import { getChapters } from "@/lib/mangadex";
+import { search } from "@/lib/mangadex";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ manga_id: string }> },
-) {
+const limit = 10;
+
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
+  const q = searchParams.get("q") || "";
   const page = Number(searchParams.get("page") || 1);
-  const { manga_id } = await context.params;
-  const res = await getChapters(manga_id, page);
+  const res = await search(q, page, limit);
   if (res.error) {
     return NextResponse.json({
       error: true,
-      response: null,
     });
   }
   return NextResponse.json(res.response);
