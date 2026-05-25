@@ -208,3 +208,34 @@ export async function search(q: string, page: number = 1, limit: number = 10) {
     };
   }
 }
+
+export async function getCategories() {
+  try {
+    const res = await fetch(`${BASE_URL_API}/manga/tag`, {
+      headers,
+
+      // detail manga jarang berubah
+      next: {
+        revalidate: 3600,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed fetch manga");
+    }
+
+    const data = await res.json();
+
+    return {
+      error: false,
+      response: data,
+    };
+  } catch (e) {
+    console.error(e);
+
+    return {
+      error: true,
+      response: null,
+    };
+  }
+}
